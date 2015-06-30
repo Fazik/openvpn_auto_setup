@@ -1,2 +1,4 @@
 # openvpn_auto_setup
-script for openvpn setup on freebsd
+Script for openvpn setup on FreeBSD
+
+Bug reports are appreciated :)
