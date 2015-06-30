@@ -254,7 +254,6 @@ export protocol_client="`grep "^proto" $OVPN/server.conf|awk '{ if ($2 == "udp")
          print "tcp-client" }'`"
 export comment="`grep fragment $OVPN/server.conf|sed -nE 's/(#)?.*/\1/p'`" 
 fi
-mkdir -p /home/admin/apache_mon/
 
 echo $users|tr -s "," "\n"|while read USERNAME;do 
 cd $main_dir
@@ -299,15 +298,10 @@ key-direction 1
 <key>
 `cat keys/$USERNAME\.key`
 </key> " > $OVPN/$USERNAME/client.ovpn
- cd $OVPN/
-# tar czf openvpn-keys-$USERNAME\.tgz $USERNAME
-# ln -s $OVPN/openvpn-keys-$USERNAME\.tgz /home/admin/apache_mon/openvpn-keys-$USERNAME\.tgz
- ln -s $OVPN/$USERNAME/client.ovpn /home/admin/apache_mon/$USERNAME-client.ovpn
  cd $main_dir
 done
 
-
 echo -e "${blue}>>>server and client keys copied to /usr/local/etc/openvpn/{ssl,client}${NC}"
 echo $users|tr -s "," "\n"|while read USERNAME;do
- echo -e ">>>link to client files if out default vhost exist -> ${green}http://`ifconfig | grep -vE "inet6|127.0.0.1"| grep 'inet' | awk -F" " '{print $2}' | head -n 1`:82/$USERNAME-client.ovpn ${NC}"
+ echo -e ">>>Client files $OVPN/$USERNAME/client.ovpn ${NC}"
 done
