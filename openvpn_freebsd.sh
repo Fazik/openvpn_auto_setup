@@ -75,20 +75,6 @@ else
 fi
 
 
-if  [ "$pkg_ch" != "" ] || [ "$pkgng_ch" != "" ]
- then echo -e "${blue}openvpn is present${NC}"
-else
-  echo -e "${blue}Installing openvpn. May take some time${NC}"
-  cd /usr/ports/security/openvpn
-  make install clean BATCH=yes >> /dev/null
-  if [ $? -ne 0 ];then 
-   echo -e "${red}Can't install openvpn from ports${NC}"
-   exit 1
-  fi
-fi 
-
-
-
 if [ "$check_pkgng" != "" ]
 then
  export pkgng_ch2="`pkg info|grep easy-rsa`"
@@ -107,14 +93,32 @@ if  [ "$pkg_ch2" != "" ] || [ "$pkgng_ch2" != "" ]
  then echo -e "${blue}easy-rsa is present${NC}"
 else
   echo -e "${blue}Installing easy-rsa${NC}"
+  if [ -d "/usr/ports/security/easy-rsa2" ];then
+   cd  /usr/ports/security/easy-rsa2;make install clean BATCH=yes >> /dev/null
+  else
   cd /usr/ports/security/easy-rsa
   make install clean BATCH=yes >> /dev/null 
+  fi
     if [ $? -ne 0 ];then
    echo -e "${red}Can't install easy-rsa from ports${NC}"
    exit 1
   fi
 
 fi
+
+if  [ "$pkg_ch" != "" ] || [ "$pkgng_ch" != "" ]
+ then echo -e "${blue}openvpn is present${NC}"
+else
+  echo -e "${blue}Installing openvpn. May take some time${NC}"
+  cd /usr/ports/security/openvpn
+  make install clean BATCH=yes >> /dev/null
+  if [ $? -ne 0 ];then 
+   echo -e "${red}Can't install openvpn from ports${NC}"
+   exit 1
+  fi
+fi 
+
+
 mkdir -p $main_dir
 if [ -d "/usr/local/share/doc/openvpn/easy-rsa" ];then
   cp -rp /usr/local/share/doc/openvpn/easy-rsa/1.0/*  $main_dir
@@ -218,11 +222,16 @@ management 127.0.0.1 3000
 $duplicate duplicate-cn # allow multiple connection of user with some common name
 ifconfig ${internal_ip}.1 255.255.255.0 
 ifconfig-pool ${internal_ip}.2 ${internal_ip}.254
-push "redirect-gateway"
-push "route-gateway ${internal_ip}.1"
-push "dhcp-option DNS 8.8.8.8"
-push "ping 10"
-push "ping-exit 90"
+#snndbuf 393216
+#rcvbuf 393216
+#push \"sndbuf 393216\"
+#push \"rcvbuf 393216\"
+
+push \"redirect-gateway\"
+push \"route-gateway ${internal_ip}.1\"
+push \"dhcp-option DNS 8.8.8.8\"
+push \"ping 10\"
+push \"ping-exit 90\"
 tmp-dir /usr/local/etc/openvpn/tmp
 writepid /var/run/openvpn.pid
 key-direction 1
@@ -254,6 +263,7 @@ export protocol_client="`grep "^proto" $OVPN/server.conf|awk '{ if ($2 == "udp")
          print "tcp-client" }'`"
 export comment="`grep fragment $OVPN/server.conf|sed -nE 's/(#)?.*/\1/p'`" 
 fi
+mkdir -p /home/admin/apache_mon/
 
 echo $users|tr -s "," "\n"|while read USERNAME;do 
 cd $main_dir
@@ -279,6 +289,8 @@ rport $port
 #log-append /var/log/openvpn.log
 tun-mtu 1500
 mssfix
+route-method exe
+route-delay 2
 $comment fragment 1400
 persist-key
 persist-tun
@@ -301,7 +313,8 @@ key-direction 1
  cd $main_dir
 done
 
+
 echo -e "${blue}>>>server and client keys copied to /usr/local/etc/openvpn/{ssl,client}${NC}"
 echo $users|tr -s "," "\n"|while read USERNAME;do
- echo -e ">>>Client files $OVPN/$USERNAME/client.ovpn ${NC}"
+ echo -e "${green} Config -> ${OVPN}${USERNAME}/client.ovpn ${NC}"
 done
