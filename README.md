@@ -1,12 +1,14 @@
-#openvpn_auto_setup
+# OpenVPN Auto Setup
 
-#Short description)
+## Short description
 
 Script for openvpn setup on FreeBSD
 Suports tun/tap, port,IP specifing, tcp/udp, several users
 
 
-#USAGE
+### USAGE
+
+```
 /bin/sh openvpn_freebsd.sh [-i <ip>] [-p <port>] [-u user1,user2...] [-d] [-t]
             -i IP where to listen (default last)
             -p port on which listen(default 1194)
@@ -14,8 +16,8 @@ Suports tun/tap, port,IP specifing, tcp/udp, several users
             -c duplicate cn(defaul off)
             -t use tcp(default udp)
             -d (do not rebuild server keys and configs may be used to recreate or create new client keys )" 
+```
 
-After successfull end You can get client config at /usr/local/etc/openvpn/$username/client.ovpn
+After successfull end You can get client config at **/usr/local/etc/openvpn/$username/client.ovpn**
 
 Bug reports are appreciated :)
-
